@@ -51,14 +51,43 @@ if __name__ == '__main__':
     
     #Calcula 100 palavras mais relevantes em conjunto às palavras escolhidas
     rdd_all = rdd_inter.join(rdd_idf).map(lambda x: (x[0], x[1][0]*x[1][1])).takeOrdered(100, key=lambda x: -x[1])
-    df = pd.DataFrame(rdd_all, columns = ["palavra", "relevancia"]).to_csv("rdd_all.csv", index=False)
+    df = pd.DataFrame(rdd_all, columns = ["palavra", "relevancia"])
+    df_csv = df.to_csv("rdd_all.csv", index=False)
     
     #Calcula 100 palavras mais relevantes com apenas do conjunto Oreo
     rdd_oreo = rdd_freq_oreo.subtractByKey(rdd_freq_negresco).join(rdd_idf).map(lambda x: (x[0], x[1][0]*x[1][1])).takeOrdered(100, key=lambda x: -x[1])
-    df_o = pd.DataFrame(rdd_oreo, columns = ["palavra", "relevancia"]).to_csv("rdd_oreo.csv", index=False)
+    df_o = pd.DataFrame(rdd_oreo, columns = ["palavra", "relevancia"])
+    df_o_csv = df_o.to_csv("rdd_oreo.csv", index=False)
     
     #Calcula 100 palavras mais relevantes com apenas do conjunto Negresco
     rdd_negresco = rdd_freq_negresco.subtractByKey(rdd_freq_oreo).join(rdd_idf).map(lambda x: (x[0], x[1][0]*x[1][1])).takeOrdered(100, key=lambda x: -x[1])
-    df_n = pd.DataFrame(rdd_negresco, columns = ["palavra", "relevancia"]).to_csv("rdd_negresco.csv", index=False)
+    df_n = pd.DataFrame(rdd_negresco, columns = ["palavra", "relevancia"])
+    df_n_csv = df_n.to_csv("rdd_negresco.csv", index=False)
+    
+    #criando wordcloud
+    dict_freq = {}
+    for i,row in df.iterrows():
+        dict_freq[row["palavra"]] = row["relevancia"]
+        
+    dict_freq_o = {}
+    for i,row in df_o.iterrows():
+        dict_freq_o[row["palavra"]] = row["relevancia"]
+        
+    dict_freq_n = {}
+    for i,row in df_n.iterrows():
+        dict_freq_n[row["palavra"]] = row["relevancia"]
+    
+    wordcloud_all = WordCloud(max_font_size=50, max_words=100, background_color="white").generate_from_frequencies(frequencies=dict_freq)
+    wordcloud_all.to_file("wordcloud_all.png")
+    
+    wordcloud_oreo = WordCloud(max_font_size=50, max_words=100, background_color="white").generate_from_frequencies(frequencies=dict_freq_o)
+    wordcloud_oreo.to_file("wordcloud_oreo.png")
+    
+    wordcloud_negresco = WordCloud(max_font_size=50, max_words=100, background_color="white").generate_from_frequencies(frequencies=dict_freq_n)
+    wordcloud_negresco.to_file("wordcloud_negresco.png")
+    
+    
+    
+    
 
     
